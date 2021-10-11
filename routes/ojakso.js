@@ -5,15 +5,15 @@ var dbConn  = require('../lib/db');
 // display books page
 router.get('/', function(req, res, next) {
       
-    dbConn.query('SELECT * FROM opiskelija ORDER BY idOpiskelija',function(err,rows)     {
+    dbConn.query('SELECT * FROM opintojakso ORDER BY idOpintojakso',function(err,rows)     {
  
         if(err) {
             req.flash('error', err);
-            // render to views/koulu/index.ejs
-            res.render('koulu',{data:''});   
+            // render to views/ojakso/index.ejs
+            res.render('ojakso',{data:''});   
         } else {
-            // render to views/books/index.ejs
-            res.render('koulu',{data:rows});
+            // render to views/ojakso/index.ejs
+            res.render('ojakso',{data:rows});
         }
     });
 });
@@ -21,34 +21,31 @@ router.get('/', function(req, res, next) {
 // display add book page
 router.get('/add', function(req, res, next) {    
     // render to add.ejs
-    res.render('koulu/add', {
-        etunimi: '',
-        sukunimi: '',
-        osoite: '',
-        luokkatunnus: ''         
+    res.render('ojakso/add', {
+        Koodi: '',
+        Laajuus: '',
+        Nimi: ''        
     })
 })
 
 // add a new book
 router.post('/add', function(req, res, next) {    
 
-    let etunimi = req.body.etunimi;
-    let sukunimi = req.body.sukunimi;
-    let osoite = req.body.osoite;
-    let luokkatunnus = req.body.luokkatunnus;
+    let Koodi = req.body.Koodi;
+    let Laajuus = req.body.Laajuus;
+    let Nimi = req.body.Nimi;
     let errors = false;
 
-    if(etunimi.length === 0 || sukunimi.length === 0) {
+    if(Koodi.length === 0 || Laajuus.length === 0 || Nimi.length === 0) {
         errors = true;
 
         // set flash message
-        req.flash('error', "Annappa etu- ja sukunimi");
+        req.flash('error', "Anna kurssin koodi, laajuus ja nimi");
         // render to add.ejs with flash message
-        res.render('koulu/add', {
-            etunimi: etunimi,
-            sukunimi: sukunimi,
-            osoite: osoite,
-            luokkatunnus: luokkatunnus
+        res.render('ojakso/add', {
+            Koodi: Koodi,
+            Laajuus: Laajuus,
+            Nimi: Nimi
         })
     }
 
@@ -56,56 +53,53 @@ router.post('/add', function(req, res, next) {
     if(!errors) {
 
         var form_data = {
-            etunimi: etunimi,
-            sukunimi: sukunimi,
-            osoite: osoite,
-            luokkatunnus: luokkatunnus
+            Koodi: Koodi,
+            Laajuus: Laajuus,
+            Nimi: Nimi
         }
         
         // insert query
-        dbConn.query('INSERT INTO opiskelija SET ?', form_data, function(err, result) {
+        dbConn.query('INSERT INTO opintojakso SET ?', form_data, function(err, result) {
             //if(err) throw err
             if (err) {
                 req.flash('error', err)
                  
                 // render to add.ejs
-                res.render('koulu/add', {
-                    etunimi: form_data.etunimi,
-                    sukunimi: form_data.sukunimi, 
-                    osoite: form_data.osoite,
-                    luokkatunnus: form_data.luokkatunnus                    
+                res.render('ojakso/add', {
+                    Koodi: form_data.Koodi,
+                    Laajuus: form_data.Laajuus, 
+                    Nimi: form_data.Nimi               
                 })
             } else {                
-                req.flash('success', 'Opiskelija successfully added');
-                res.redirect('/koulu');
+                req.flash('success', 'Opintojakso lisätty');
+                res.redirect('/ojakso');
             }
         })
     }
 })
 
 // display edit book page
-router.get('/edit/(:idOpiskelija)', function(req, res, next) {
+router.get('/edit/(:idOpintojakso)', function(req, res, next) {
 
-    let idOpiskelija = req.params.idOpiskelija;
+    let idOpintojakso = req.params.idOpintojakso;
    
-    dbConn.query('SELECT * FROM opiskelija WHERE idOpiskelija = ' + idOpiskelija, function(err, rows, fields) {
+    dbConn.query('SELECT * FROM opintojakso WHERE idOpintojakso = ' + idOpintojakso, function(err, rows, fields) {
         if(err) throw err
          
         // if user not found
         if (rows.length <= 0) {
-            req.flash('error', 'Opiskelija ei löydy idOpiskelija = ' + idOpiskelija)
-            res.redirect('/koulu')
+            req.flash('error', 'opintojakso ei löydy idOpintojakso = ' + idOpintojakso)
+            res.redirect('/ojakso')
         }
         // if book found
         else {
             // render to edit.ejs
-            res.render('koulu/edit', {
-                title: 'Edit opiskelija', 
-                idOpiskelija: rows[0].idOpiskelija,
-                etunimi: rows[0].etunimi,
-                sukunimi: rows[0].sukunimi,
-                osoite: rows[0].osoite,
-                luokkatunnus: rows[0].luokkatunnus
+            res.render('ojakso/edit', {
+                title: 'Edit opintojakso', 
+                idOpintojakso: rows[0].idOpintojakso,
+                Koodi: rows[0].Koodi,
+                Laajuus: rows[0].Laajuus,
+                Nimi: rows[0].Nimi
 
             })
         }
@@ -113,27 +107,25 @@ router.get('/edit/(:idOpiskelija)', function(req, res, next) {
 })
 
 // update book data
-router.post('/update/:idOpiskelija', function(req, res, next) {
+router.post('/update/:idOpintojakso', function(req, res, next) {
 
-    let idOpiskelija = req.params.idOpiskelija;
-    let etunimi = req.body.etunimi;
-    let sukunimi = req.body.sukunimi;
-    let osoite = req.body.osoite;
-    let luokkatunnus = req.body.luokkatunnus;
+    let idOpintojakso = req.params.idOpintojakso;
+    let Koodi = req.body.Koodi;
+    let Laajuus = req.body.Laajuus;
+    let Nimi = req.body.Nimi;
     let errors = false;
 
-    if(etunimi.length === 0 || sukunimi.length === 0) {
+    if(Koodi.length === 0 || Laajuus.length === 0 || Nimi.length === 0) {
         errors = true;
         
         // set flash message
-        req.flash('error', "Ole hyvä ja anna etu- ja sukunimi");
+        req.flash('error', "Ole hyvä ja anna kurssin koodi, laajuus ja nimi");
         // render to add.ejs with flash message
-        res.render('koulu/edit', {
-            idOpiskelija: req.params.idOpiskelija,
-            etunimi: etunimi,
-            sukunimi: sukunimi,
-            osoite: osoite,
-            luokkatunnus: luokkatunnus
+        res.render('ojakso/edit', {
+            idOpintojakso: req.params.idOpintojakso,
+            Koodi: Koodi,
+            Laajuus: Laajuus,
+            Nimi: Nimi
         })
     }
 
@@ -141,50 +133,48 @@ router.post('/update/:idOpiskelija', function(req, res, next) {
     if( !errors ) {   
  
         var form_data = {
-            etunimi: etunimi,
-            sukunimi: sukunimi,
-            osoite: osoite,
-            luokkatunnus: luokkatunnus
+            Koodi: Koodi,
+            Laajuus: Laajuus,
+            Nimi: Nimi
         }
         // update query
-        dbConn.query('UPDATE opiskelija SET ? WHERE idOpiskelija = ' + idOpiskelija, form_data, function(err, result) {
+        dbConn.query('UPDATE opintojakso SET ? WHERE idOpintojakso = ' + idOpintojakso, form_data, function(err, result) {
             //if(err) throw err
             if (err) {
                 // set flash message
                 req.flash('error', err)
                 // render to edit.ejs
-                res.render('koulu/edit', {
-                    idOpiskelija: req.params.idOpiskelija,
-                    etunimi: form_data.etunimi,
-                    sukunimi: form_data.sukunimi,
-                    osoite: form_data.osoite,
-                    luokkatunnus: form_data.luokkatunnus
+                res.render('ojakso/edit', {
+                    idOpintojakso: req.params.idOpintojakso,
+                    Koodi: form_data.Koodi,
+                    Laajuus: form_data.Laajuus,
+                    Nimi: form_data.Nimi
                 })
             } else {
-                req.flash('success', 'Opiskelija päivitetty onnistuneesti');
-                res.redirect('/koulu');
+                req.flash('success', 'Opintojakso päivitetty onnistuneesti');
+                res.redirect('/ojakso');
             }
         })
     }
 })
    
 // delete book
-router.get('/delete/(:idOpiskelija)', function(req, res, next) {
+router.get('/delete/(:idOpintojakso)', function(req, res, next) {
 
-    let idOpiskelija = req.params.idOpiskelija;
+    let idOpintojakso = req.params.idOpintojakso;
      
-    dbConn.query('DELETE FROM opiskelija WHERE idOpiskelija = ' + idOpiskelija, function(err, result) {
+    dbConn.query('DELETE FROM opintojakso WHERE idOpintojakso = ' + idOpintojakso, function(err, result) {
         //if(err) throw err
         if (err) {
             // set flash message
             req.flash('error', err)
             // redirect to books page
-            res.redirect('/koulu')
+            res.redirect('/ojakso')
         } else {
             // set flash message
-            req.flash('success', 'Opiskelija tuhottu! idOpiskelija = ' + idOpiskelija)
+            req.flash('success', 'Opintojakso tuhottu! idOpintojakso = ' + idOpintojakso)
             // redirect to books page
-            res.redirect('/koulu')
+            res.redirect('/ojakso')
         }
     })
 })
